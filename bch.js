@@ -68,7 +68,7 @@ function CalculateBCH() {
     var s3_array = GenerateS3Array(input);
     polynom_array = s1_array;
 
-    output_string += "w(<i>x</i>)=" + GeneratePolynom(s1_array) + "<br>";
+    output_string += "w(<i>x</i>) = " + GeneratePolynom(s1_array) + "<br>";
     output_string += "<br>";
 
     var s1_string = GenerateS1(s1_array);
@@ -81,31 +81,61 @@ function CalculateBCH() {
     var s1_sum = GetSSum(s1_array);
     var s3_sum = GetSSum(s3_array);
 
-    output_string += "w(<i>&beta;</i>)=" + GetBetaChar(s1_sum) + "<br>";
-    output_string += "w(<i>&beta;<sup>3</sup></i>)=" + GetBetaChar(s3_sum) + "<br>";
+    output_string += "w(<i>&beta;</i>) = " + GetBetaChar(s1_sum) + "<br>";
+    output_string += "w(<i>&beta;<sup>3</sup></i>) = " + GetBetaChar(s3_sum) + "<br>";
     output_string += "<br>";
 
     if (s1_sum == 0 && s3_sum == 0) {
-        output_string += "s(<i>w</i>)=" + GetBetaChar(s1_sum) + ", " + GetBetaChar(s1_sum) + "<br>";
+        output_string += "s(<i>w</i>) = " + GetBetaChar(s1_sum) + ", " + GetBetaChar(s1_sum) + "<br>";
         output_string += "Word contains no errors.<br><br>"
-        output_string += "e(<i>x</i>)=0<br>";
-        output_string += "v(<i>x</i>)=w(<i>x</i>)+e(<i>x</i>)<br>";
-        output_string += "v(<i>x</i>)=" + GeneratePolynom(polynom_array.sort(function(a, b){return a-b;})) + "<br>";
+        output_string += "e(<i>x</i>) = 0<br>";
+        output_string += "v(<i>x</i>) = w(<i>x</i>)+e(<i>x</i>)<br>";
+        if (polynom_array.constructor !== Array)
+            output_string += "v(<i>x</i>) = " + GeneratePolynom(polynom_array) + "<br>";
+        else
+            output_string += "v(<i>x</i>) = " + GeneratePolynom(polynom_array.sort(function(a, b){return a-b;})) + "<br>";
     }
     else if (DimensionReminder(s1_sum * 3) == s3_sum) {
-        output_string += "s(<i>w</i>)=" + GetBetaChar(s1_sum) + ", " + GetBetaChar(s3_sum) + "<br>";
-        output_string += "(" + GetBetaChar(s1_sum) + ")<sup>3</sup>=" + GetBetaChar(DimensionReminder(s1_sum * 3)) + "<br>";
+        output_string += "s(<i>w</i>) = " + GetBetaChar(s1_sum) + ", " + GetBetaChar(s3_sum) + "<br>";
+        output_string += "(" + GetBetaChar(s1_sum) + ")<sup>3</sup> = " + GetBetaChar(DimensionReminder(s1_sum * 3)) + "<br>";
         output_string += "Word contains 1 error.<br><br>";
         output_string += DecodeOneError(s1_sum, s3_sum);
     }
     else {
-        output_string += "s<sub>1</sub>: (" + GetBetaChar(s1_sum) + ")<sup>3</sup>=" + GetBetaChar(DimensionReminder(s1_sum * 3)) + "!=" + GetBetaChar(s3_sum) + "<br>";
+        output_string += "(" + GetBetaChar(s1_sum) + ")<sup>3</sup> = " + GetBetaChar(DimensionReminder(s1_sum * 3)) + " &ne; " + GetBetaChar(s3_sum) + "<br>";
         output_string += "Word containts at least 2 errors.<br><br>";
         output_string += DecodeMoreErrors(s1_sum, s3_sum);
     }
 
+    output_string += "<br>";
+    output_string += "w = " + GenerateWordFromPolynom(GenerateS1Array(input)) + "<br>";
+    output_string += "v = " + GenerateWordFromPolynom(polynom_array) + "<br>";
+
     SetOutputString(output_string);
     return;
+}
+
+function GenerateWordFromPolynom(array) {
+    var word = "";
+
+    if (array.constructor !== Array) { array = [-1]; }
+
+    if (array.indexOf(dimension) > -1)
+        word += "1";
+    else
+        word += "0";
+
+    for (i = 1; i < dimension; i++) {
+        if (array.indexOf(i) > -1)
+            word += "1";
+        else
+            word += "0";
+
+        if ((i+1) % 5 == 0)
+            word += " ";
+    }
+
+    return word;
 }
 
 function DimensionReminder(num) {
@@ -122,13 +152,11 @@ function DecodeMoreErrors (s1, s3) {
     var beta_i_plus_j = s1;
     var beta_i_times_j = table[DimensionReminder(s3 + (dimension - s1))][DimensionReminder(s1 * 2)];
 
-    // console.log("b: " + beta_i_times_j + " s1: " + s1 + " s3: " + s3 + " d: " + dimension + " p1: " + DimensionReminder(s3 * (dimension - s1)) + " p2: " + DimensionReminder(s1 * 2));
+    var output = "&beta;<sup>i</sup>+&beta;<sup>j</sup> = " + GetBetaChar(beta_i_plus_j) + "<br>";
+    output += "&beta;<sup>i</sup>*&beta;<sup>j</sup> = " + GetBetaChar(beta_i_times_j) + "<br><br>";
 
-    var output = "&beta;<sup>i</sup>+&beta;<sup>j</sup>=" + GetBetaChar(beta_i_plus_j) + "<br>";
-    output += "&beta;<sup>i</sup>*&beta;<sup>j</sup>=" + GetBetaChar(beta_i_times_j) + "<br><br>";
-
-    for (i = 0; i < dimension; i++) {
-        for (j = 0; j < dimension; j++) {
+    for (i = 0; i <= dimension; i++) {
+        for (j = 0; j <= dimension; j++) {
             if (table[i][j] == beta_i_plus_j && DimensionReminder(i + j) == beta_i_times_j) {
                 output += "e(<i>x</i>) = x<sup>" + i + "</sup>+x<sup>" + j + "</sup><br>";
                 error.push(i); error.push(j);
@@ -143,9 +171,10 @@ function DecodeMoreErrors (s1, s3) {
     }
     
     var new_polynom_array = CorrectErrorInArray(CorrectErrorInArray(polynom_array, error[0]), error[1]);
+    polynom_array = new_polynom_array;
     
-    output += "v(<i>x</i>)=w(<i>x</i>)+e(<i>x</i>)<br>";
-    output += "v(<i>x</i>)=" + GeneratePolynom(new_polynom_array.sort(function(a, b){return a-b;})) + "<br>";
+    output += "v(<i>x</i>) = w(<i>x</i>)+e(<i>x</i>)<br>";
+    output += "v(<i>x</i>) = " + GeneratePolynom(new_polynom_array) + "<br>";
 
     return output;
 }
@@ -164,32 +193,46 @@ function CorrectErrorInArray(array, error) {
     if (!contains)
         new_array.push(error);
 
-    return new_array;
+    if (new_array.length == 0)
+        return 0;
+    else
+        return new_array;
 }
 
 function DecodeOneError (s1, s3) {
-    var output = "e(<i>x</i>) = x<sup>" + s1 + "</sup><br>";
+    var output = "e(<i>x</i>) = " + GeneratePolynom(s1) + "<br>";
     var new_polynom_array = CorrectErrorInArray(polynom_array, s1);
+    polynom_array = new_polynom_array;
 
-    output += "v(<i>x</i>)=w(<i>x</i>)+e(<i>x</i>)<br>";
-    output += "v(<i>x</i>)=" + GeneratePolynom(new_polynom_array) + "<br>";
+    output += "v(<i>x</i>) = w(<i>x</i>)+e(<i>x</i>)<br>";
+    output += "v(<i>x</i>) = " + GeneratePolynom(new_polynom_array) + "<br>";
 
     return output;
 }
 
-function GeneratePolynom (array) {
+function GeneratePolynom(array) {
     var output = "";
-    array.forEach(function(element) {
-        if (element == dimension) {output += "1+";}
-        else if (element == 1) {output += "x+";}
-        else {output += "x<sup>" + element + "</sup>+"}
-    }, this);
     
+    if (array.constructor !== Array) {
+        if (array == dimension) {output += "1+";}
+        else if (array == 0) {output += "0+";}
+        else if (array == 1) {output += "x+";}
+        else {output += "x<sup>" + array + "</sup>+"}
+    }
+    else {
+        array.sort(function(a, b){return a-b;});
+        for (i = 0; i < array.length; i++) {
+            if (array[i] == dimension) {output += "1+";}
+            else if (array[i] == 1) {output += "x+";}
+            else {output += "x<sup>" + array[i] + "</sup>+"}
+        }
+    }
+
     return output.substring(0, output.length - 1);
 }
 
 function GetSSum(array) {
-    if (array.length == 0)
+    if (array.constructor !== Array)
         return 0;
 
     var result = array[0];
@@ -216,7 +259,7 @@ function GetBetaChar(index) {
 }
 
 function GenerateS1(input_array) {
-    var output = "w(<i>&beta;</i>)=";
+    var output = "w(<i>&beta;</i>) = ";
 
     for (var i = 0; i < input_array.length; i++) {
         if (input_array[i] == 0) {
@@ -230,7 +273,7 @@ function GenerateS1(input_array) {
         }
     }
 
-    return output.substring(0, output.length - 1);
+    return input_array.constructor === Array ? output.substring(0, output.length - 1) : output += "0";
 }
 
 function GenerateS1Array(input_string) {
@@ -250,7 +293,7 @@ function GenerateS1Array(input_string) {
 }
 
 function GenerateS3(input_array) {
-    var output = "w(<i>&beta;<sup>3</sup></i>)=";
+    var output = "w(<i>&beta;<sup>3</sup></i>) = ";
 
     for (var i = 0; i < input_array.length; i++) {
         if (input_array[i] == 0) {
@@ -264,7 +307,7 @@ function GenerateS3(input_array) {
         }
     }
 
-    return output.substring(0, output.length - 1);
+    return input_array.constructor === Array ? output.substring(0, output.length - 1) : output += "0";
 }
 
 function GenerateS3Array(input_string) {

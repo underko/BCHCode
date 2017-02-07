@@ -1,0 +1,21 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>BCH</title>
+    <meta name="description" content="BCH">
+</head>
+
+<body>
+    <script src="bch.js"></script>
+
+    <p>Enter binary BCH code with length 15 or 31:</p>
+
+    <input type="number" id="input_field" placeholder="000010000100001" maxlength="31" autofocus title="Input Word" onchange="DisplayLength();">
+    <input type="button" id="input_button" value="Calculate" onclick="CalculateBCH();">
+<hr>
+    <p id="output_string"></p>
+
+</body>
+</html>
